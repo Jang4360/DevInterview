@@ -2,6 +2,7 @@ package dev.interview.server.qna.service;
 
 import dev.interview.server.global.exception.NotFoundException;
 import dev.interview.server.qna.domain.Qna;
+import dev.interview.server.qna.dto.QnaTodayResponse;
 import dev.interview.server.qna.repository.QnaRepository;
 import dev.interview.server.user.domain.User;
 import dev.interview.server.user.repository.UserRepository;
@@ -49,7 +50,16 @@ public class QnaService {
     }
 
     // 사용자별 복습 대상 질문 조회
-    public List<Qna> getTodayReview(UUID userId) {
-        return qnaRepository.findAllByUserIdAndScheduledDateBeforeAndIsDeletedFalse(userId,LocalDateTime.now());
+    @Transactional(readOnly = true)
+    public List<QnaTodayResponse> getReviewQnasForToday(UUID userId) {
+        List<Qna> qnaList = qnaRepository.findAllByUserIdAndScheduledDateBeforeAndIsDeletedFalse(userId, LocalDateTime.now());
+        return qnaList.stream()
+                .map(qna -> new QnaTodayResponse(
+                        qna.getId(),
+                        qna.getQuestion(),
+                        qna.getAnswer(),
+                        qna.getScheduledDate()
+                ))
+                .toList();
     }
 }
