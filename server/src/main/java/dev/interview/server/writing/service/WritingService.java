@@ -1,5 +1,6 @@
 package dev.interview.server.writing.service;
 
+import dev.interview.server.global.exception.NotFoundException;
 import dev.interview.server.user.domain.User;
 import dev.interview.server.user.repository.UserRepository;
 import dev.interview.server.writing.domain.Writing;
@@ -27,7 +28,7 @@ public class WritingService {
     @Transactional
     public Writing createWriting(UUID userId, String content) {
         User user = userRepository.findById(userId)
-                .orElseThrow(() -> new IllegalArgumentException("존재하지 않는 사용자입니다."));
+                .orElseThrow(() -> new NotFoundException("존재하지 않는 사용자입니다."));
 
         Writing writing = Writing.builder()
                 .content(content)
@@ -36,5 +37,4 @@ public class WritingService {
 
         return writingRepository.save(writing);
     }
-
 }

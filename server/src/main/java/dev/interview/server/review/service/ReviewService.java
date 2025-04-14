@@ -1,5 +1,6 @@
 package dev.interview.server.review.service;
 
+import dev.interview.server.global.exception.NotFoundException;
 import dev.interview.server.qna.domain.Qna;
 import dev.interview.server.qna.repository.QnaRepository;
 import dev.interview.server.review.domain.ReviewQueue;
@@ -11,7 +12,6 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDateTime;
-import java.util.List;
 import java.util.UUID;
 
 // 복습 이력 관련 비즈니스 로직
@@ -26,9 +26,9 @@ public class ReviewService {
     @Transactional
     public ReviewQueue recordReview(UUID userId, UUID qnaId) {
         User user = userRepository.findById(userId)
-                .orElseThrow(() -> new IllegalArgumentException("존재하지 않는 사용자입니다."));
+                .orElseThrow(() -> new NotFoundException("존재하지 않는 사용자입니다."));
         Qna qna = qnaRepository.findById(qnaId)
-                .orElseThrow(() -> new IllegalArgumentException("존재하지 않는 질문입니다."));
+                .orElseThrow(() -> new NotFoundException("존재하지 않는 질문입니다."));
 
         ReviewQueue review = ReviewQueue.builder()
                 .user(user)
@@ -41,7 +41,7 @@ public class ReviewService {
 
     // 특정 qna 복습 횟수 조회
     public Long getReviewCounterByQna(UUID qnaId) {
-        return reviewRepository.counterByQnaId(qnaId);
+        return reviewRepository.countByQnaId(qnaId);
     }
 
     // 사용자 전체 복습 횟수 조회

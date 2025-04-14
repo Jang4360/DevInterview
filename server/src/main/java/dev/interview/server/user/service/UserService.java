@@ -1,5 +1,6 @@
 package dev.interview.server.user.service;
 
+import dev.interview.server.global.exception.NotFoundException;
 import dev.interview.server.user.domain.User;
 import dev.interview.server.user.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
@@ -32,6 +33,6 @@ public class UserService {
     // 사용자 단건 조회 (로그인 세션 검증)
     public User getById(UUID userId) {
         return userRepository.findById(userId)
-                .orElseThrow(() -> new IllegalArgumentException("존재하지 않는 사용자입니다."));
+                .orElseThrow(() -> new NotFoundException("존재하지 않는 사용자입니다."));
     }
 }
