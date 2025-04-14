@@ -7,7 +7,7 @@ import java.util.UUID;
 
 // 사용자 Entity
 @Entity
-@Table(name = "user")
+@Table(name = "users")
 @Getter
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 @AllArgsConstructor

@@ -1,5 +1,6 @@
 package dev.interview.server.qna.service;
 
+import dev.interview.server.global.exception.NotFoundException;
 import dev.interview.server.qna.domain.Qna;
 import dev.interview.server.qna.repository.QnaRepository;
 import dev.interview.server.user.domain.User;
@@ -14,6 +15,7 @@ import java.time.LocalDateTime;
 import java.util.List;
 import java.util.UUID;
 
+// GPT 질문/답변 관리 비즈니스 로직
 @Service
 @RequiredArgsConstructor
 public class QnaService {
@@ -25,9 +27,9 @@ public class QnaService {
     @Transactional
     public Qna saveQna(UUID userId, UUID writingId, String question, String answer, LocalDateTime scheduledDate) {
         User user = userRepository.findById(userId)
-                .orElseThrow(() -> new IllegalArgumentException("존재하지 않는 사용자입니다."));
+                .orElseThrow(() -> new NotFoundException("존재하지 않는 사용자입니다."));
         Writing writing = writingRepository.findById(writingId)
-                .orElseThrow(() -> new IllegalArgumentException("존재하지 않는 글입니다."));
+                .orElseThrow(() -> new NotFoundException("존재하지 않는 글입니다."));
 
         Qna qna = Qna.builder()
                 .user(user)
@@ -50,5 +52,4 @@ public class QnaService {
     public List<Qna> getTodayReview(UUID userId) {
         return qnaRepository.findAllByUserIdAndScheduledDateBeforeAndIsDeletedFalse(userId,LocalDateTime.now());
     }
-
 }
