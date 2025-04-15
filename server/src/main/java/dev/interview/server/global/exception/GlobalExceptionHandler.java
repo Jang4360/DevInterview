@@ -1,5 +1,6 @@
 package dev.interview.server.global.exception;
 
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.ResponseEntity;
 import org.springframework.validation.BindException;
 import org.springframework.web.bind.MethodArgumentNotValidException;
@@ -9,6 +10,7 @@ import org.springframework.web.bind.annotation.RestControllerAdvice;
 
 // 프로젝트 전역에서 발생하는 예외들을 처리
 @RestControllerAdvice
+@Slf4j
 public class GlobalExceptionHandler {
     // 커스텀 예외 처리: DevInterviewException 상속 클래스
     @ExceptionHandler(DevInterviewException.class)
@@ -37,7 +39,8 @@ public class GlobalExceptionHandler {
     // 처리되지 않은 모든 예외 처리 (500)
     @ExceptionHandler(Exception.class)
     public ResponseEntity<ErrorResponse> handleServerError(Exception ex) {
+        log.error("[예외 발생] 서버오류: ", ex); // 로그만 남김
         return ResponseEntity.internalServerError()
-                .body(ErrorResponse.of(ErrorCode.INTERNAL_SERVER_ERROR, ex.getMessage()));
+                .body(ErrorResponse.of(ErrorCode.INTERNAL_SERVER_ERROR,"서버 내부 오류가 발생했습니다."));
     }
 }
