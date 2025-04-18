@@ -45,4 +45,12 @@ public class Qna {
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "user_id")
     private User user;
+
+    public void updateScheduledDate(LocalDateTime nextDate) {
+        this.scheduledDate = nextDate;
+    }
+
+    public void markAsDeleted() {
+        this.isDeleted = true;
+    }
 }
