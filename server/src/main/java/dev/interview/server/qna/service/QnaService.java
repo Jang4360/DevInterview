@@ -1,5 +1,6 @@
 package dev.interview.server.qna.service;
 
+import dev.interview.server.global.exception.ForbiddenException;
 import dev.interview.server.global.exception.NotFoundException;
 import dev.interview.server.qna.domain.Qna;
 import dev.interview.server.qna.dto.QnaTodayResponse;
@@ -61,5 +62,16 @@ public class QnaService {
                         qna.getScheduledDate()
                 ))
                 .toList();
+    }
+
+    // 사용자별 질문 삭제
+    @Transactional
+    public void deleteQna(UUID qnaId, UUID userId) {
+        Qna qna = qnaRepository.findById(qnaId)
+                .orElseThrow(() -> new NotFoundException("존재하지 않는 질문입니다."));
+        if (!qna.getUser().getId().equals(userId)) {
+            throw new ForbiddenException("자신의 질문만 삭제할 수 있습니다.");
+        }
+        qna.markAsDeleted(); // soft delete
     }
 }
