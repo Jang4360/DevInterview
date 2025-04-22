@@ -1,11 +1,13 @@
 package dev.interview.server.writing.controller;
 
+import dev.interview.server.writing.domain.Writing;
 import dev.interview.server.writing.dto.WritingCreateRequest;
 import dev.interview.server.writing.dto.WritingCreateResponse;
 import dev.interview.server.writing.service.WritingService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
@@ -23,15 +25,9 @@ public class WritingController {
     @PostMapping
     @Operation(summary = "글 생성", description = "사용자의 글을 저장합니다.")
     public ResponseEntity<WritingCreateResponse> createWriting(@RequestBody WritingCreateRequest request) {
-        var writing = writingService.createWriting(request.userId(), request.content());
+        Writing saved = writingService.createWriting(request.userId(), request.content());
 
-        // 서비스 로직에서 반환한 Writing 객체를 DTO 로 변환
-        WritingCreateResponse response = new WritingCreateResponse(
-                writing.getId(),
-                writing.getContent(),
-                writing.getUser().getId()
-        );
-
-        return ResponseEntity.ok(response);
+        return ResponseEntity.status(HttpStatus.CREATED)
+                .body(WritingCreateResponse.from(saved));
     }
 }

@@ -55,12 +55,7 @@ public class QnaService {
     public List<QnaTodayResponse> getReviewQnasForToday(UUID userId) {
         List<Qna> qnaList = qnaRepository.findAllByUserIdAndScheduledDateBeforeAndIsDeletedFalse(userId, LocalDateTime.now());
         return qnaList.stream()
-                .map(qna -> new QnaTodayResponse(
-                        qna.getId(),
-                        qna.getQuestion(),
-                        qna.getAnswer(),
-                        qna.getScheduledDate()
-                ))
+                .map(QnaTodayResponse::from)
                 .toList();
     }
 

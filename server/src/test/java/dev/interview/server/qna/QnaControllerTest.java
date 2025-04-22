@@ -1,0 +1,94 @@
+package dev.interview.server.qna;
+
+import dev.interview.server.qna.controller.QnaController;
+import dev.interview.server.qna.domain.Qna;
+import dev.interview.server.qna.dto.QnaCreateRequest;
+import dev.interview.server.qna.dto.QnaTodayResponse;
+import dev.interview.server.qna.service.QnaService;
+import dev.interview.server.restdocs.RestDocsSupport;
+import dev.interview.server.user.domain.User;
+import dev.interview.server.writing.domain.Writing;
+import org.junit.jupiter.api.DisplayName;
+import org.junit.jupiter.api.Test;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.autoconfigure.security.servlet.SecurityAutoConfiguration;
+import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
+import org.springframework.context.annotation.Import;
+import org.springframework.http.MediaType;
+
+import java.time.LocalDateTime;
+import java.util.List;
+import java.util.UUID;
+
+import static org.mockito.ArgumentMatchers.*;
+import static org.mockito.Mockito.when;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
+
+@WebMvcTest(controllers = QnaController.class, excludeAutoConfiguration = SecurityAutoConfiguration.class)
+@Import(QnaTestConfig.class)
+@DisplayName("QnaController 단위 테스트")
+public class QnaControllerTest extends RestDocsSupport {
+    @Autowired
+    private QnaService qnaService;
+
+    @Test
+    @DisplayName("GPT 질문저장 API 성공테스트")
+    void createQna_success() throws Exception {
+        //given
+        UUID writingId = UUID.randomUUID();
+        UUID userId = UUID.randomUUID();
+        String question = "Spring 이란?";
+        String answer = "Spring 은 자바 웹 프레임워크입니다.";
+
+        QnaCreateRequest request = new QnaCreateRequest(userId, question, answer);
+
+        Qna saved = Qna.builder()
+                .id(UUID.randomUUID())
+                .user(User.builder().id(userId).build())
+                .writing(Writing.builder().id(writingId).build())
+                .question(question)
+                .answer(answer)
+                .scheduledDate(LocalDateTime.now())
+                .isDeleted(false)
+                .build();
+
+        when(qnaService.saveQna(eq(userId), eq(writingId), eq(question), eq(answer), any(LocalDateTime.class)))
+                .thenReturn(saved);
+
+        // when & then
+        mockMvc.perform(post("/api/qna/{writingId}", writingId)
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsString(request)))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.qnaId").value(saved.getId().toString()));
+    }
+
+    @Test
+    @DisplayName("오늘 복습할 질문 조회 API 성공테스트")
+    void getTodayReviewQnas_success() throws Exception {
+        //given
+        UUID userId = UUID.randomUUID();
+        UUID qnaId = UUID.randomUUID();
+        String question = "Spring Boot란?";
+        String answer = "Spring Boot는 자바 기반 웹 프레임워크입니다.";
+        LocalDateTime scheduleDate = LocalDateTime.now().minusDays(1);
+
+        List<QnaTodayResponse> mockResponse = List.of(
+                new QnaTodayResponse(qnaId,question,answer,scheduleDate)
+        );
+
+        when(qnaService.getReviewQnasForToday(userId)).thenReturn(mockResponse);
+
+        // when & then
+        mockMvc.perform(get("/api/qna/today")
+                        .param("userId", userId.toString())
+                        .accept(MediaType.APPLICATION_JSON))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$[0].id").value(qnaId.toString()))
+                .andExpect(jsonPath("$[0].question").value(question))
+                .andExpect(jsonPath("$[0].answer").value(answer));
+    }
+}
