@@ -21,7 +21,9 @@ import java.util.List;
 import java.util.UUID;
 
 import static org.mockito.ArgumentMatchers.*;
+import static org.mockito.Mockito.doNothing;
 import static org.mockito.Mockito.when;
+import static org.springframework.restdocs.mockmvc.RestDocumentationRequestBuilders.delete;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
@@ -90,5 +92,48 @@ public class QnaControllerTest extends RestDocsSupport {
                 .andExpect(jsonPath("$[0].id").value(qnaId.toString()))
                 .andExpect(jsonPath("$[0].question").value(question))
                 .andExpect(jsonPath("$[0].answer").value(answer));
+    }
+
+    @Test
+    @DisplayName("사용자별 전체 질문 조회 API 성공 테스트")
+    void getQnaListByUser_success() throws Exception {
+        // given
+        UUID userId = UUID.randomUUID();
+        UUID qnaId = UUID.randomUUID();
+        String question = "JPA?";
+        LocalDateTime scheduleTime = LocalDateTime.now().plusDays(3);
+
+        Qna qna = Qna.builder()
+                .id(qnaId)
+                .question(question)
+                .scheduledDate(scheduleTime)
+                .isDeleted(false)
+                .user(User.builder().id(UUID.randomUUID()).build())
+                .build();
+
+        when(qnaService.getAllByUserId(userId)).thenReturn(List.of(qna));
+
+        // when & then
+        mockMvc.perform(get("/api/qna/user/{userID}",userId)
+                        .accept(MediaType.APPLICATION_JSON))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$[0].id").value(qnaId.toString()))
+                .andExpect(jsonPath("$[0].question").value(question))
+                .andExpect(jsonPath("$[0].scheduleDate").exists())
+                .andExpect(jsonPath("$[0].isDeleted").value(false));
+    }
+
+    @Test
+    @DisplayName("질문 삭제 API 성공 테스트")
+    void deleteQna_success() throws Exception {
+        // given
+        UUID qnaId = UUID.randomUUID();
+        UUID userId = UUID.randomUUID();
+
+        doNothing().when(qnaService).deleteQna(qnaId,userId);
+
+        // when & then
+        mockMvc.perform(delete("/api/qna/{qnaId}?userId={userID}", qnaId, userId))
+                .andExpect(status().isNoContent());
     }
 }

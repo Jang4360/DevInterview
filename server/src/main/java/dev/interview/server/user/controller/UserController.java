@@ -16,15 +16,14 @@ import org.springframework.web.bind.annotation.*;
 @RequestMapping("/api/users")
 @Tag(name = "User", description = "사용자 관련 API")
 public class UserController {
-    private UserService userService;
+    private final UserService userService;
 
     // 회원가입 API
     @PostMapping
-    @Operation(summary = "회원가입", description = "사용자 새로 등록핮니다.")
+    @Operation(summary = "회원가입", description = "사용자 새로 등록합니다.")
     public ResponseEntity<UserResponse> signup(@RequestBody UserSignupRequest request) {
         User user = userService.save(request.toEntity());
         return ResponseEntity.status(HttpStatus.CREATED)
                 .body(UserResponse.from(user));
     }
-
 }

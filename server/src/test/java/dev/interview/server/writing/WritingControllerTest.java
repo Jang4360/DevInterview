@@ -21,8 +21,6 @@ import org.springframework.http.MediaType;
 
 import java.util.UUID;
 
-
-
 // WritingController 테스트
 @WebMvcTest(controllers = WritingController.class, excludeAutoConfiguration = SecurityAutoConfiguration.class)
 @Import(WritingTestConfig.class)

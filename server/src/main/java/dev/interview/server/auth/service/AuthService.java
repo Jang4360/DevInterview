@@ -26,6 +26,7 @@ public class AuthService {
     private final PasswordEncoder passwordEncoder;
     private final RefreshTokenRepository refreshTokenRepository;
 
+    // 로그인
     @Transactional
     public LoginResponse login(LoginRequest request) {
         User user = userRepository.findByEmail(request.email())
@@ -64,5 +65,4 @@ public class AuthService {
 
         return newToken;
     }
-
 }

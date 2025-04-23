@@ -13,7 +13,7 @@ import java.util.UUID;
 
 @RestController
 @RequiredArgsConstructor
-@RequestMapping("/api/review/")
+@RequestMapping("/api/review")
 @Tag(name = "Review", description = "복습 이력 관련 API")
 public class ReviewController {
     private final ReviewService reviewService;
