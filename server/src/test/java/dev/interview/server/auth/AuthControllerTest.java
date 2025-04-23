@@ -1,5 +1,6 @@
 package dev.interview.server.auth;
 
+import dev.interview.server.auth.controller.AuthController;
 import dev.interview.server.auth.dto.JwtToken;
 import dev.interview.server.auth.dto.LoginRequest;
 import dev.interview.server.auth.dto.LoginResponse;
@@ -17,10 +18,11 @@ import java.util.UUID;
 
 import static org.mockito.Mockito.when;
 import static org.springframework.restdocs.mockmvc.RestDocumentationRequestBuilders.post;
+import static org.springframework.test.web.servlet.result.MockMvcResultHandlers.print;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
-@WebMvcTest(controllers = AuthControllerTest.class, excludeAutoConfiguration = SecurityAutoConfiguration.class)
+@WebMvcTest(controllers = AuthController.class, excludeAutoConfiguration = SecurityAutoConfiguration.class)
 @Import(AuthTestConfig.class)
 @DisplayName("AuthController 단위 테스트")
 public class AuthControllerTest extends RestDocsSupport {
@@ -46,6 +48,7 @@ public class AuthControllerTest extends RestDocsSupport {
         mockMvc.perform(post("/api/auth/login")
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(request)))
+                .andDo(print())
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.userId").value(userId.toString()))
                 .andExpect(jsonPath("$.accessToken").value(accessToken))
