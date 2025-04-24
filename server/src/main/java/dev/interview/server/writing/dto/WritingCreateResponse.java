@@ -4,7 +4,7 @@ import dev.interview.server.writing.domain.Writing;
 
 import java.util.UUID;
 
-// 글 응답 DTO
+// 글 작성 응답 DTO
 public record WritingCreateResponse(
         UUID id,
         String content,

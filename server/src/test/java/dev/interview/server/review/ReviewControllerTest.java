@@ -16,6 +16,10 @@ import java.util.UUID;
 
 import static org.mockito.Mockito.doNothing;
 import static org.mockito.Mockito.when;
+import static org.springframework.restdocs.mockmvc.MockMvcRestDocumentation.document;
+import static org.springframework.restdocs.payload.PayloadDocumentation.*;
+import static org.springframework.restdocs.request.RequestDocumentation.parameterWithName;
+import static org.springframework.restdocs.request.RequestDocumentation.pathParameters;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
 import static org.springframework.test.web.servlet.result.MockMvcResultHandlers.print;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
@@ -44,6 +48,12 @@ public class ReviewControllerTest extends RestDocsSupport {
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(request)))
                 .andDo(print())
+                .andDo(document("review-success",
+                        requestFields(
+                                fieldWithPath("userId").description("유저 ID"),
+                                fieldWithPath("qnaId").description("질문 ID")
+                        )
+                ))
                 .andExpect(status().isOk());
     }
 
@@ -58,6 +68,14 @@ public class ReviewControllerTest extends RestDocsSupport {
 
         // when & then
         mockMvc.perform(get("/api/review/qna/{qnaId}/count", qnaId))
+                .andDo(document("review-qna-count-success",
+                        pathParameters(
+                                parameterWithName("qnaId").description("질문 ID")
+                        ),
+                        responseFields(
+                                fieldWithPath("count").description("복습 횟수")
+                        )
+                ))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.count").value(count));
     }
@@ -73,6 +91,14 @@ public class ReviewControllerTest extends RestDocsSupport {
 
         // when & then
         mockMvc.perform(get("/api/review/user/{userId}/count", userId))
+                .andDo(document("review-user-count-success",
+                        pathParameters(
+                                parameterWithName("userId").description("유저 ID")
+                        ),
+                        responseFields(
+                                fieldWithPath("count").description("유저 전체 복습 횟수")
+                        )
+                ))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.count").value(count));
 

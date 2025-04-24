@@ -23,7 +23,10 @@ import java.util.UUID;
 import static org.mockito.ArgumentMatchers.*;
 import static org.mockito.Mockito.doNothing;
 import static org.mockito.Mockito.when;
+import static org.springframework.restdocs.mockmvc.MockMvcRestDocumentation.document;
 import static org.springframework.restdocs.mockmvc.RestDocumentationRequestBuilders.delete;
+import static org.springframework.restdocs.payload.PayloadDocumentation.*;
+import static org.springframework.restdocs.request.RequestDocumentation.*;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
@@ -64,6 +67,19 @@ public class QnaControllerTest extends RestDocsSupport {
         mockMvc.perform(post("/api/qna/{writingId}", writingId)
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(request)))
+                .andDo(document("qna-create-success",
+                        pathParameters(
+                                parameterWithName("writingId").description("작성 글 ID")
+                        ),
+                        requestFields(
+                                fieldWithPath("userId").description("사용자 ID"),
+                                fieldWithPath("question").description("질문 내용"),
+                                fieldWithPath("answer").description("질문에 대한 답변")
+                        ),
+                        responseFields(
+                                fieldWithPath("qnaId").description("저장된 QnA ID")
+                        )
+                        ))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.qnaId").value(saved.getId().toString()));
     }
@@ -86,12 +102,24 @@ public class QnaControllerTest extends RestDocsSupport {
 
         // when & then
         mockMvc.perform(get("/api/qna/today")
-                        .param("userId", userId.toString())
+                        .param("userId",userId.toString())
                         .accept(MediaType.APPLICATION_JSON))
+                .andDo(document("qna-today-review-success",
+                        queryParameters(
+                                parameterWithName("userId").description("사용자 ID")
+                        ),
+                        responseFields(
+                                fieldWithPath("[].id").description("QnA ID"),
+                                fieldWithPath("[].question").description("질문 내용"),
+                                fieldWithPath("[].answer").description("답변 내용"),
+                                fieldWithPath("[].scheduleDate").description("예정된 복습 날짜")
+                        )
+                ))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$[0].id").value(qnaId.toString()))
                 .andExpect(jsonPath("$[0].question").value(question))
                 .andExpect(jsonPath("$[0].answer").value(answer));
+
     }
 
     @Test
@@ -114,8 +142,19 @@ public class QnaControllerTest extends RestDocsSupport {
         when(qnaService.getAllByUserId(userId)).thenReturn(List.of(qna));
 
         // when & then
-        mockMvc.perform(get("/api/qna/user/{userID}",userId)
+        mockMvc.perform(get("/api/qna/user/{userID}", userId)
                         .accept(MediaType.APPLICATION_JSON))
+                .andDo(document("qna-user-list-success",
+                        pathParameters(
+                                parameterWithName("userID").description("사용자 ID")
+                        ),
+                        responseFields(
+                                fieldWithPath("[].id").description("QnA ID"),
+                                fieldWithPath("[].question").description("질문 내용"),
+                                fieldWithPath("[].scheduleDate").description("예정된 복습 날짜"),
+                                fieldWithPath("[].isDeleted").description("삭제 여부")
+                        )
+                ))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$[0].id").value(qnaId.toString()))
                 .andExpect(jsonPath("$[0].question").value(question))
@@ -134,6 +173,15 @@ public class QnaControllerTest extends RestDocsSupport {
 
         // when & then
         mockMvc.perform(delete("/api/qna/{qnaId}?userId={userID}", qnaId, userId))
+                .andDo(document("qna-delete-success",
+                        pathParameters(
+                                parameterWithName("qnaId").description("QnA ID")
+                        ),
+                        queryParameters(
+                                parameterWithName("userId").description("사용자 ID")
+                        )
+                ))
                 .andExpect(status().isNoContent());
+
     }
 }

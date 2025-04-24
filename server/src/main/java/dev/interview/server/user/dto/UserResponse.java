@@ -4,6 +4,7 @@ import dev.interview.server.user.domain.User;
 
 import java.util.UUID;
 
+// 회원가입 응답 DTO
 public record UserResponse(
         UUID id,
         String name,

@@ -17,7 +17,10 @@ import org.springframework.http.MediaType;
 import java.util.UUID;
 
 import static org.mockito.Mockito.when;
+import static org.springframework.restdocs.mockmvc.MockMvcRestDocumentation.document;
 import static org.springframework.restdocs.mockmvc.RestDocumentationRequestBuilders.post;
+import static org.springframework.restdocs.payload.PayloadDocumentation.*;
+import static org.springframework.restdocs.request.RequestDocumentation.*;
 import static org.springframework.test.web.servlet.result.MockMvcResultHandlers.print;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
@@ -48,6 +51,17 @@ public class AuthControllerTest extends RestDocsSupport {
         mockMvc.perform(post("/api/auth/login")
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(request)))
+                .andDo(document("login-success",
+                        requestFields(
+                                fieldWithPath("email").description("이메일"),
+                                fieldWithPath("password").description("비밀번호")
+                        ),
+                        responseFields(
+                                fieldWithPath("userId").description("유저 ID"),
+                                fieldWithPath("accessToken").description("엑세스 토큰"),
+                                fieldWithPath("refreshToken").description("리프레시 토큰")
+                        )
+                        ))
                 .andDo(print())
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.userId").value(userId.toString()))
@@ -68,12 +82,19 @@ public class AuthControllerTest extends RestDocsSupport {
         when(authService.reissue(oldRefreshToken)).thenReturn(newToken);
 
         // when & then
-        mockMvc.perform(post("/api/auth/reissue")
-                        .param("refreshToken", oldRefreshToken)
+        mockMvc.perform(post("/api/auth/reissue?refreshToken="+oldRefreshToken)
                         .contentType(MediaType.APPLICATION_JSON))
+                .andDo(document("reissue-success",
+                        queryParameters(
+                                parameterWithName("refreshToken").description("기존 리프레시 토큰")
+                        ),
+                        responseFields(
+                                fieldWithPath("accessToken").description("새로운 엑세스 토큰"),
+                                fieldWithPath("refreshToken").description("새로운 리프레시 토큰")
+                        )
+                        ))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.accessToken").value(newAccessToken))
                 .andExpect(jsonPath("$.refreshToken").value(newRefreshToken));
     }
-
 }

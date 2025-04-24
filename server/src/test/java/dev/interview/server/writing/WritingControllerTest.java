@@ -12,6 +12,8 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.autoconfigure.security.servlet.SecurityAutoConfiguration;
 import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
 import static org.mockito.Mockito.when;
+import static org.springframework.restdocs.mockmvc.MockMvcRestDocumentation.document;
+import static org.springframework.restdocs.payload.PayloadDocumentation.*;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
@@ -50,6 +52,17 @@ public class WritingControllerTest extends RestDocsSupport {
         mockMvc.perform(post("/api/writings")
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(request)))
+                .andDo(document("writing-create-success",
+                        requestFields(
+                                fieldWithPath("userId").description("유저 ID"),
+                                fieldWithPath("content").description("글 내용")
+                        ),
+                        responseFields(
+                                fieldWithPath("id").description("글 ID"),
+                                fieldWithPath("content").description("글 내용"),
+                                fieldWithPath("userId").description("유저 ID")
+                        )
+                ))
                 .andExpect(status().isCreated())
                 .andExpect(jsonPath("$.id").exists())
                 .andExpect(jsonPath("$.content").value(content));

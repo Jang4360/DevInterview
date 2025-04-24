@@ -25,5 +25,4 @@ public class RefreshToken {
     public void updateToken(String token) {
         this.token = token;
     }
-
 }
