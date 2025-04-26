@@ -1,0 +1,24 @@
+# src/main/resources/application.yml
+
+spring:
+  datasource:
+    url: jdbc:postgresql://localhost:5432/devinterview
+    username: postgres
+    password: jang4360
+    driver-class-name: org.postgresql.Driver
+
+  security:
+    user:
+      name: user
+      password: 1234
+
+  jpa:
+    hibernate:
+      ddl-auto: update
+    properties:
+      hibernate:
+        format_sql: true
+    show-sql: true
+
+jwt:
+  secret: your-very-secret-key
